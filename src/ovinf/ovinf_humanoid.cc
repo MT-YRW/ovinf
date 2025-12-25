@@ -219,15 +219,10 @@ void HumanoidPolicy::WorkerThread() {
       inference_time_ = elapsed_seconds.count() * 1000;
 
       VectorT action_eigen =
-          Eigen::Map<VectorT>(action_tensor.data<float>(), action_size_ + TC_size_)
+          Eigen::Map<VectorT>(action_tensor.data<float>(), action_size_)
               .cwiseMin(clip_action_)
               .cwiseMax(-clip_action_);
-      latest_TC_ = action_eigen.tail(TC_size_);
-      float tc_max = latest_TC_.maxCoeff();
-      VectorT exp_tc = (latest_TC_.array() - tc_max).exp();
-      latest_TC_ = exp_tc / exp_tc.sum();
-      latest_TC_.maxCoeff(&latest_tc_max);
-      action_eigen = action_eigen.head(action_size_);
+
       last_action_ = action_eigen;
       latest_target_ = action_eigen * action_scale_ + joint_default_position_;
     }
@@ -282,9 +277,6 @@ void HumanoidPolicy::CreateLog(YAML::Node const &config) {
   headers.push_back("prog_gravity_z");
   headers.push_back("inference_time_ms");
 
-  // sb
-  headers.push_back("TC_class");
-
   csv_logger_ = std::make_shared<CsvLogger>(logger_file, headers);
 }
 
@@ -315,9 +307,6 @@ void HumanoidPolicy::WriteLog(RobotObservation<float> const &obs_pack) {
     datas.push_back(obs_pack.proj_gravity(i));
   }
   datas.push_back(inference_time_);
-
-  // sb
-  datas.push_back(latest_tc_max);
 
   csv_logger_->Write(datas);
 }

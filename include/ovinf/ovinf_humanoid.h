@@ -95,7 +95,6 @@ class HumanoidPolicy : public BasePolicy<float> {
   size_t single_obs_size_;
   size_t obs_buffer_size_;
   size_t action_size_;
-  size_t TC_size_;
 
   float action_scale_;
   float obs_scale_ang_vel_;
@@ -111,8 +110,6 @@ class HumanoidPolicy : public BasePolicy<float> {
   std::shared_ptr<HistoryBuffer<float>> obs_buffer_;
   VectorT last_action_;
   VectorT latest_target_;
-  VectorT latest_TC_;
-  Eigen::Index latest_tc_max;
 
   // Clock
   bool gait_start_ = false;
