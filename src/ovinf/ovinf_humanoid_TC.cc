@@ -1,15 +1,15 @@
-#include "ovinf/ovinf_humanoid.h"
+#include "ovinf/ovinf_humanoid_TC.h"
 
 namespace ovinf {
 
-HumanoidPolicy::~HumanoidPolicy() {
+HumanoidTCPolicy::~HumanoidTCPolicy() {
   exiting_.store(true);
   if (worker_thread_.joinable()) {
     worker_thread_.join();
   }
 }
 
-HumanoidPolicy::HumanoidPolicy(const YAML::Node &config) : BasePolicy(config) {
+HumanoidTCPolicy::HumanoidTCPolicy(const YAML::Node &config) : BasePolicy(config) {
   // Read config
   size_t joint_counter = 0;
   for (auto const &name : config["policy_joint_names"]) {
@@ -67,10 +67,10 @@ HumanoidPolicy::HumanoidPolicy(const YAML::Node &config) : BasePolicy(config) {
 
   inference_done_.store(true);
   exiting_.store(false);
-  worker_thread_ = std::thread(&HumanoidPolicy::WorkerThread, this);
+  worker_thread_ = std::thread(&HumanoidTCPolicy::WorkerThread, this);
 }
 
-bool HumanoidPolicy::WarmUp(RobotObservation<float> const &obs_pack) {
+bool HumanoidTCPolicy::WarmUp(RobotObservation<float> const &obs_pack) {
   double gait_time_value = 0.0;
 
   VectorT obs(single_obs_size_);
@@ -100,7 +100,7 @@ bool HumanoidPolicy::WarmUp(RobotObservation<float> const &obs_pack) {
   }
 }
 
-bool HumanoidPolicy::InferUnsync(RobotObservation<float> const &obs_pack) {
+bool HumanoidTCPolicy::InferUnsync(RobotObservation<float> const &obs_pack) {
   if (gait_start_ == false) {
     gait_start_ = true;
     gait_start_time_ = std::chrono::steady_clock::now();
@@ -161,7 +161,7 @@ bool HumanoidPolicy::InferUnsync(RobotObservation<float> const &obs_pack) {
   }
 }
 
-std::optional<HumanoidPolicy::VectorT> HumanoidPolicy::GetResult(
+std::optional<HumanoidTCPolicy::VectorT> HumanoidTCPolicy::GetResult(
     const size_t timeout) {
   if (inference_done_.load()) {
     return latest_target_;
@@ -174,7 +174,7 @@ std::optional<HumanoidPolicy::VectorT> HumanoidPolicy::GetResult(
   }
 }
 
-void HumanoidPolicy::PrintInfo() {
+void HumanoidTCPolicy::PrintInfo() {
   std::cout << "Load model: " << this->model_path_ << std::endl;
   std::cout << "Device: " << device_ << std::endl;
   std::cout << "Single obs size: " << single_obs_size_ << std::endl;
@@ -197,7 +197,7 @@ void HumanoidPolicy::PrintInfo() {
   }
 }
 
-void HumanoidPolicy::WorkerThread() {
+void HumanoidTCPolicy::WorkerThread() {
   if (realtime_) {
     if (!setProcessHighPriority(99)) {
       std::cerr << "Failed to set process high priority." << std::endl;
@@ -236,7 +236,7 @@ void HumanoidPolicy::WorkerThread() {
   }
 }
 
-void HumanoidPolicy::CreateLog(YAML::Node const &config) {
+void HumanoidTCPolicy::CreateLog(YAML::Node const &config) {
   auto now = std::chrono::system_clock::now();
   std::time_t now_time = std::chrono::system_clock::to_time_t(now);
   std::tm *now_tm = std::localtime(&now_time);
@@ -288,7 +288,7 @@ void HumanoidPolicy::CreateLog(YAML::Node const &config) {
   csv_logger_ = std::make_shared<CsvLogger>(logger_file, headers);
 }
 
-void HumanoidPolicy::WriteLog(RobotObservation<float> const &obs_pack) {
+void HumanoidTCPolicy::WriteLog(RobotObservation<float> const &obs_pack) {
   std::vector<CsvLogger::Number> datas;
 
   double gait_time_value = 2 * M_PI * current_gait_time_ / cycle_time_;
