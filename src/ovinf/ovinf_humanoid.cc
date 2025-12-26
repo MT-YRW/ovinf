@@ -31,15 +31,6 @@ HumanoidPolicy::HumanoidPolicy(const YAML::Node &config) : BasePolicy(config) {
   obs_scale_dof_vel_ = config["obs_scales"]["dof_vel"].as<float>();
   obs_scale_proj_gravity_ = config["obs_scales"]["proj_gravity"].as<float>();
 
-  // noise_scale
-  enable_noise = config["enable_noise"].as<bool>();
-  noise_level = config["noise_level"].as<float>();
-  dof_pos_noise_scale = config["dof_pos_noise_scale"].as<float>();
-  dof_vel_noise_scale = config["dof_vel_noise_scale"].as<float>();
-  ang_vel_noise_scale = config["ang_vel_noise_scale"].as<float>();
-  lin_vel_noise_scale = config["lin_vel_noise_scale"].as<float>();
-  grav_noise_scale = config["grav_noise_scale"].as<float>();
-
   clip_action_ = config["clip_action"].as<float>();
   joint_default_position_ = VectorT(joint_names_.size());
   stick_to_core_ = config["stick_to_core"].as<size_t>();
@@ -143,23 +134,6 @@ bool HumanoidPolicy::InferUnsync(RobotObservation<float> const &obs_pack) {
   obs.segment(5 + 3 * action_size_, 3) = obs_pack.ang_vel * obs_scale_ang_vel_;
   obs.segment(8 + 3 * action_size_, 3) =
       obs_pack.proj_gravity * obs_scale_proj_gravity_;
-
-  if (enable_noise){
-      VectorT obs_noise_scale(single_obs_size_);
-      obs_noise_scale.setZero();
-      obs_noise_scale.segment(5,18) = dof_pos_noise_scale * obs_scale_dof_pos_;
-      obs_noise_scale.segment(18,31) = dof_vel_noise_scale * obs_scale_dof_vel_;
-      obs_noise_scale.segment(31,44) = 0.0;
-      obs_noise_scale.segment(44,47) = ang_vel_noise_scale * obs_scale_ang_vel_;
-      obs_noise_scale.segment(47,50) = grav_noise_scale * obs_scale_proj_gravity_;
-
-      std::mt19937 gen(std::random_device{}());
-      std::normal_distribution<float> dist(0, 1);
-
-      for (int i = 0; i < single_obs_size_; ++i) {
-        obs[i] += dist(gen) * obs_noise_scale[i] * noise_level;
-      }
-  }
 
   if (!inference_done_.load()) {
     input_queue_.enqueue(obs);
