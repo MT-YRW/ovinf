@@ -133,6 +133,15 @@ class HumanoidTCPolicy : public BasePolicy<float> {
   // Clock
   bool use_absolute_clock_ = true;
   float control_period_ = 0.01f;
+
+  // noise
+  bool enable_noise = true;
+  float noise_level;
+  float dof_pos_noise_scale;
+  float dof_vel_noise_scale;
+  float ang_vel_noise_scale;
+  float lin_vel_noise_scale;
+  float grav_noise_scale;
 };
 }  // namespace ovinf
 
