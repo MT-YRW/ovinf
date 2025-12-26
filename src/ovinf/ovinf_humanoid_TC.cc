@@ -145,21 +145,20 @@ bool HumanoidTCPolicy::InferUnsync(RobotObservation<float> const &obs_pack) {
   obs.segment(8 + 3 * action_size_, 3) =
       obs_pack.proj_gravity * obs_scale_proj_gravity_;
 
-  if (enable_noise){
-      VectorT obs_noise_scale(single_obs_size_);
-      obs_noise_scale.setZero();
-      obs_noise_scale.segment(5,18) = dof_pos_noise_scale * obs_scale_dof_pos_;
-      obs_noise_scale.segment(18,31) = dof_vel_noise_scale * obs_scale_dof_vel_;
-      obs_noise_scale.segment(31,44) = 0.0;
-      obs_noise_scale.segment(44,47) = ang_vel_noise_scale * obs_scale_ang_vel_;
-      obs_noise_scale.segment(47,50) = grav_noise_scale * obs_scale_proj_gravity_;
+  if (enable_noise) {
+    static thread_local std::mt19937 gen(std::random_device{}());
+    static thread_local std::normal_distribution<float> dist(0.0f, 1.0f);
+    
+    VectorT noise = VectorT::Zero(single_obs_size_);
+    
+    noise.segment(5, action_size_).array() = dist(gen) * dof_pos_noise_scale * obs_scale_dof_pos_ * noise_level;
+    noise.segment(5+action_size_, action_size_).array() = dist(gen) * dof_vel_noise_scale * obs_scale_dof_vel_ * noise_level;
+    int ang_vel_start = 5 + 3 * action_size_;
+    noise.segment(ang_vel_start, 3).array() = dist(gen) * ang_vel_noise_scale * obs_scale_ang_vel_ * noise_level;
+    int grav_start = 8 + 3 * action_size_;
+    noise.segment(grav_start, 3).array() = dist(gen) * grav_noise_scale * obs_scale_proj_gravity_ * noise_level;
 
-      std::mt19937 gen(std::random_device{}());
-      std::normal_distribution<float> dist(0, 1);
-
-      for (int i = 0; i < single_obs_size_; ++i) {
-        obs[i] += dist(gen) * obs_noise_scale[i] * noise_level;
-      }
+    obs += noise;
   }
 
   if (!inference_done_.load()) {
