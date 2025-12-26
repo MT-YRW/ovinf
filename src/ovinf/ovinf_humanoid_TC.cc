@@ -20,6 +20,7 @@ HumanoidTCPolicy::HumanoidTCPolicy(const YAML::Node &config) : BasePolicy(config
   single_obs_size_ = config["single_obs_size"].as<size_t>();
   obs_buffer_size_ = config["obs_buffer_size"].as<size_t>();
   action_size_ = config["action_size"].as<size_t>();
+  TC_size_ = config["terrain_class_size"].as<size_t>();
   if (action_size_ != joint_counter) {
     throw std::runtime_error("Action size mismatch");
   }
