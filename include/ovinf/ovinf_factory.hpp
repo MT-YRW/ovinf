@@ -8,6 +8,7 @@
 #include "ovinf_locomotion.h"
 #include "ovinf_perceptive.h"
 #include "ovinf_humanoid_TC.h"
+#include "ovinf_humanoid_TCAttn.h"
 
 namespace ovinf {
 
@@ -29,6 +30,8 @@ class PolicyFactory {
       return std::make_shared<LocomotionPolicy>(config);
     } else if (policy_type == "HumanoidTC") {
       return std::make_shared<HumanoidTCPolicy>(config);
+    } else if (policy_type == "HumanoidTCAttn") {
+      return std::make_shared<HumanoidTCAPolicy>(config);
     } else {
       throw std::invalid_argument("Unknown policy type: " + policy_type);
     }

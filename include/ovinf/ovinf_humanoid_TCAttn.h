@@ -5,8 +5,8 @@
  * @date 2025-4-18
  */
 
-#ifndef OVINF_HUMANOIDTC_H
-#define OVINF_HUMANOIDTC_H
+#ifndef OVINF_HUMANOIDTCA_H
+#define OVINF_HUMANOIDTCA_H
 
 #include <yaml-cpp/yaml.h>
 
@@ -35,17 +35,17 @@ namespace ovinf {
 /**
  * @brief RobotEra humanoid gym inference.
  */
-class HumanoidTCPolicy : public BasePolicy<float> {
+class HumanoidTCAPolicy : public BasePolicy<float> {
   using MatrixT = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
   using VectorT = Eigen::Matrix<float, Eigen::Dynamic, 1>;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
  public:
-  HumanoidTCPolicy() = delete;
-  ~HumanoidTCPolicy();
+  HumanoidTCAPolicy() = delete;
+  ~HumanoidTCAPolicy();
 
-  HumanoidTCPolicy(const YAML::Node &config);
+  HumanoidTCAPolicy(const YAML::Node &config);
 
   /**
    * @brief Policy warmup
@@ -115,6 +115,7 @@ class HumanoidTCPolicy : public BasePolicy<float> {
   VectorT last_action_;
   VectorT latest_target_;
   VectorT latest_TC_;
+  VectorT latest_Attn_;
   Eigen::Index latest_tc_max;
 
   // Clock
@@ -127,6 +128,7 @@ class HumanoidTCPolicy : public BasePolicy<float> {
   // Logger
   bool log_flag_ = false;
   CsvLogger::Ptr csv_logger_;
+  CsvLogger::Ptr attn_logger_;
   std::string log_name_;
   float inference_time_ = 0;
 
