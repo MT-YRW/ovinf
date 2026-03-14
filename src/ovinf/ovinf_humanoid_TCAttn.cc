@@ -265,15 +265,15 @@ void HumanoidTCAPolicy::WorkerThread() {
           Eigen::Map<VectorT>(action_tensor.data<float>(), action_size_ + Attn_size_ + TC_size_)
               .cwiseMin(clip_action_)
               .cwiseMax(-clip_action_);
+      auto action = action_eigen.head(action_size_);
       latest_Attn_ = action_eigen.segment(action_size_, Attn_size_);
       latest_TC_ = action_eigen.tail(TC_size_);
       float tc_max = latest_TC_.maxCoeff();
       VectorT exp_tc = (latest_TC_.array() - tc_max).exp();
       latest_TC_ = exp_tc / exp_tc.sum();
       latest_TC_.maxCoeff(&latest_tc_max);
-      action_eigen = action_eigen.head(action_size_);
-      last_action_ = action_eigen;
-      latest_target_ = action_eigen * action_scale_ + joint_default_position_;
+      last_action_ = action;
+      latest_target_ = action * action_scale_ + joint_default_position_;
     }
     inference_done_.store(true);
     std::this_thread::sleep_for(std::chrono::microseconds(10));
