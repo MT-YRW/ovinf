@@ -332,7 +332,10 @@ void HumanoidTCAPolicy::CreateLog(YAML::Node const &config) {
   headers.push_back("inference_time_ms");
 
   // sb
-  headers.push_back("TC_class");
+  for (int i = 0; i < TC_size_; ++i) {
+    headers.push_back("TC_class_" + std::to_string(i));
+  }
+  headers.push_back("TC");
 
   std::vector<std::string> attn_headers;
   for (int i = 0; i < Attn_size_; ++i) {
@@ -373,8 +376,10 @@ void HumanoidTCAPolicy::WriteLog(RobotObservation<float> const &obs_pack) {
   datas.push_back(inference_time_);
 
   // sb
-  datas.push_back(latest_tc_max);
-
+  for (size_t i = 0; i < TC_size_; ++i) {
+    datas.push_back(latest_TC_(i));
+  }
+  datas.push_back(static_cast<float>(latest_tc_max));
   csv_logger_->Write(datas);
 
   // for attention score
