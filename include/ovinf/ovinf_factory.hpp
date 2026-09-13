@@ -5,6 +5,7 @@
 #include "ovinf_epsilon.h"
 #include "ovinf_humanoid.h"
 #include "ovinf_humanoid_stand.h"
+#include "ovinf_humanoid_skater.h"
 #include "ovinf_locomotion.h"
 #include "ovinf_perceptive.h"
 #include "ovinf_humanoid_TC.h"
@@ -23,6 +24,8 @@ class PolicyFactory {
       return std::make_shared<HumanoidPolicy>(config);
     } else if (policy_type == "HumanoidStand") {
       return std::make_shared<HumanoidStandPolicy>(config);
+    } else if (policy_type == "HumanoidSkater") {
+      return std::make_shared<HumanoidSkaterPolicy>(config);
     } else if (policy_type == "Epsilon") {
       return std::make_shared<EpsilonPolicy>(config);
     } else if (policy_type == "Perceptive") {
